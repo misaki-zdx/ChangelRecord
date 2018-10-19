@@ -1,0 +1,8 @@
+request.setCharacterEncoding() 是设置从request中取得的值或从数据库中取出值时的编码流。设置动态文字（参数，数据库）
+
+response.setContentType("text/html;charset=gb2312") 是设置页面中为utf-8的编码.静态页面文字。指定了HTTP响应的编码，同时设置浏览器显示的编码。
+response.setCharacterEncoding() 设置HTTP响应的编码，如果在之前使用response.setContentType设置l编码格式，则使用response.setCharacterEncoding所指定的编码格式
+覆盖之前的设置。
+
+相同点是都必须在getWriter()执行之前或者response之前被提交.
+

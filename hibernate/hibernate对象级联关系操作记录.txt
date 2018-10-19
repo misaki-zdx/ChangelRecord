@@ -1,0 +1,168 @@
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.util.Iterator;
+import java.util.List;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import entity.Admin;
+import entity.User;
+import factory.HibernateSessionFactory;
+
+public class TestAdmin {
+	// private static Logger logger =
+	// LogManager.getLogger(TestAdmin.class.getName());
+	public static void main(String[] args) {
+		// logger.trace("开始程序");
+		// logger.info("logo info");
+
+		// logger.trace("退出程序");
+		// HibernateSessionFactory.closeSession();
+		f3();
+		System.exit(0);
+
+	}
+
+	/**
+	 * 
+	 * 删除user中的user对象
+	 */
+	public static void f() {
+		Session session = HibernateSessionFactory.getSession();
+		Transaction tran = session.beginTransaction();
+		org.hibernate.query.Query createQuery = session.createQuery("from User");
+		List<User> list = createQuery.list();
+		session.delete(list.get(0));
+		tran.commit();
+		HibernateSessionFactory.closeSession();
+	}
+
+	/**
+	 * 
+	 * 通过admin对象级联添加user对象
+	 */
+	public static void f2() {
+		Session session = HibernateSessionFactory.getSession();
+		Transaction tran = session.beginTransaction();
+		Admin load = session.load(Admin.class, 1);
+		// List<User> user = load.getUser();
+		User user = new User();
+		// user.setAdmin(load);
+		user.setUname("王五");
+		user.setBirthday(Date.valueOf("1993-2-23"));
+		load.getUser().add(user);
+		session.save(load);
+		tran.commit();
+		HibernateSessionFactory.closeSession();
+	}
+
+	/**
+	 * 
+	 * 级联删除admin中的user对象
+	 * 
+	 * 在配置双重mapping的关系下 就可以解决由cascade带来的级联关系异常 可以直接删除users 中的user对象
+	 */
+	public static void f3() {
+		Session session = HibernateSessionFactory.getSession();
+		Transaction transaction = session.beginTransaction();
+		/*
+		 * Exception: deleted object would be re-saved by cascade (remove
+		 * deleted object from associations)
+		 * 为什么了?因为在Userlei中对Admin书写了级联关系，在删除User类的树蕨时，会先查找Admin的关联
+		 * 
+		 */
+		Admin load = session.get(Admin.class, 2);
+		List<User> users = load.getUser();
+		//需要先移除主键的关联关系 
+		User remove = users.remove(users.size()-1);
+		//再删除 user对象
+		session.delete(remove);
+		session.save(load);
+		transaction.commit();
+		HibernateSessionFactory.closeSession();
+
+	}
+	/**
+	 * 
+	 * admin 增加 user对象
+	 */
+	public static void addUser(){
+		Session session = HibernateSessionFactory.getSession();
+		Transaction transaction = session.beginTransaction();
+		/*
+		 * Exception: deleted object would be re-saved by cascade (remove
+		 * deleted object from associations)
+		 * 为什么了?因为在Userlei中对Admin书写了级联关系，在删除User类的树蕨时，会先查找Admin的关联
+		 * 
+		 */
+		Admin load = session.get(Admin.class, 2);
+		List<User> users = load.getUser();
+		User newUser = new User();
+		//在admin 对象下增加user对象 默认aid是为当前admin的aid 即使如下设置，也没有作用
+		newUser.setAid(3);
+		newUser.setUname("夏夏");
+		new SimpleDateFormat();
+		newUser.setBirthday(Date.valueOf(new SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date())));
+		users.add(newUser);
+		session.update(load);
+		transaction.commit();
+		HibernateSessionFactory.closeSession();
+
+	}
+
+	/**
+	 * user类级联添加 admin对象
+	 */
+	public static void f4() {
+		Session session = HibernateSessionFactory.getSession();
+		Transaction beginTransaction = session.beginTransaction();
+		User user = new User();
+		Admin admin = new Admin();
+		admin.setName("test1");
+		admin.setPassword("123");
+		// user.setAdmin(admin);
+		user.setUname("testUser1");
+		user.setBirthday(Date.valueOf("1832-1-2"));
+		session.save(user);
+		beginTransaction.commit();
+		HibernateSessionFactory.closeSession();
+	}
+	
+	/**
+	 * 
+	 * 从user表中取出user对象(在添加了两个aid映射的测试)
+	 * 
+	 * 在这样的情况下 hibernate会提示repeated mapping 要求其中的一个映射 添加 inserttable =false，updatetable=false
+	 */
+	public static void f5(){
+		Session session = HibernateSessionFactory.getSession();
+		Transaction transaction = session.beginTransaction();
+		org.hibernate.query.Query query = session.createQuery("from User");
+		List list = query.list();
+		Iterator iterator = list.iterator();
+		while(iterator.hasNext()){
+			System.out.println(iterator.next());
+		}
+		transaction.commit();
+		HibernateSessionFactory.closeSession();
+	}
+	
+	/**
+	 * 
+	 * 在添加了两个aid的情况下，admin映射的是aid 会不会冲突
+	 * 事实证明，在前面解决aid的repeated mapping的时候，就已经解决了这个问题
+	 * 
+	 * 如下：去除admin中的user集合
+	 */
+	public static void f6(){
+		Session session = HibernateSessionFactory.getSession();
+		Transaction transaction = session.beginTransaction();
+		Admin admin = session.load(Admin.class,2);
+		List<User> users = admin.getUser();
+		Iterator<User> iterator = users.iterator();
+		while(iterator.hasNext()){
+			System.out.println(iterator.next());
+		}
+		transaction.commit();
+		HibernateSessionFactory.closeSession();
+	}
+}

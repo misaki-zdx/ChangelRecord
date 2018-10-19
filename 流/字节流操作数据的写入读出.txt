@@ -1,0 +1,30 @@
+public static void doStream() throws IOException{
+		File file = new File("D:/fileTest/", "test.txt");
+		String parent = file.getParent();
+		File file2 = new File(parent);
+		if (!file2.exists()) {
+			file2.mkdir();
+		}
+		// 因为需要，所以存在 file的存在，在于他是否是一个空壳子
+		OutputStream outputStream = new FileOutputStream(file);
+		outputStream.write(parent.getBytes(), 0, parent.length());
+		outputStream.flush();
+		outputStream.close();
+
+		// copy test.txt
+		InputStream stream = new FileInputStream(file);
+		File copy = new File(file2, "testCopy.txt");
+		byte[] byt = new byte[255];
+		int length = stream.read(byt);
+		
+		//标准动作
+		OutputStream out2 = new FileOutputStream(copy);
+		if (length > 0) {
+			out2.write(byt, 0, length);
+		}
+		//记得关闭
+		out2.flush();
+		stream.close();
+		out2.close();
+		System.out.println(file.exists());
+	}

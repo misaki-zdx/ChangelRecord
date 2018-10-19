@@ -1,0 +1,129 @@
+public class Test {
+
+	public static void main(String[] args) {
+		Test test = new Test();
+		//test.f5();
+		test.f7();
+		//System.out.println(Date.valueOf("2018-07-08"));
+	}
+
+	// oid查询根据id查询某一条记录
+	public void f1() {
+		Session session = HibernateSessionFactory.getSession(); // 由此得知src的根目录即是/
+		Transaction tx = null;
+		// 开启事务
+		tx = session.beginTransaction();
+		// 根据主键 id来获取对象
+		// 这种方式总是会去数据库查询数据并返回一个真实的对象，该对象就代表数据库中的一行而非代理。如果没有找到数据就会返回null.
+		User user = session.load(User.class, 1);
+		System.out.println(user.getUname());
+		tx.commit();
+		session.close();
+	}
+	
+	//HQL查询是使用Hibernate Query Language进行的一种查询方式，在这种查询方式中必须要写hql语句才能查询
+	public void f2(){
+		Session session = HibernateSessionFactory.getSession(); // 由此得知src的根目录即是/
+		Transaction tx = null;
+		// 开启事务
+		tx = session.beginTransaction();
+		
+		//查询所有  hibernate 把一切都当作是对象 所以from的表名是是对应的实体类
+		//Query createQuery = session.createQuery("From User");
+		
+		 // 1、得到Query对象，并写入hql语句
+         //Query query = session.createQuery("from Good order by gid desc");
+         // 2、使用Query对象的list方法得到数据集合
+         //List<Good> list = query.list();
+         // 3、遍历集合获取数据
+		
+		//排序查询hql语句：正序: form 实体类名称 order by 实体类属性名 asc/desc
+		 
+		//准确查询
+		Query createQuery = session.createQuery("from User where uname = ? and sex = ?");
+		createQuery.setParameter(0, "千代");
+		createQuery.setParameter(1, "女");
+		List<User> list = createQuery.list();
+		for (User user : list) {
+			System.out.println(user);
+		}
+		tx.commit();
+		session.close();
+	}
+	public void f3(){
+		Session session = HibernateSessionFactory.getSession(); // 由此得知src的根目录即是/
+		Transaction tx = null;
+		tx = session.beginTransaction();
+		//qc查询 =
+		@SuppressWarnings("deprecation")
+		Criteria createCriteria = session.createCriteria(User.class);
+		createCriteria.add(Restrictions.eq("uname", "千代")).add(Restrictions.eq("sex", "女"));
+		List<User> list = createCriteria.list();
+		for (User user : list) {
+			System.out.println(user);
+		}
+		tx.commit();
+		session.close();
+	}
+	
+	public void f4(){
+		Session session = HibernateSessionFactory.getSession(); 
+		Transaction tx = null;
+		tx = session.beginTransaction();
+		//qbe查询  where
+		User user = new User();
+		user.setUname("千代");
+		Example create = Example.create(user);
+		Criteria createCriteria = session.createCriteria(User.class);
+		createCriteria.add(create);
+		User uniqueResult = (User)createCriteria.uniqueResult();
+		System.out.println(uniqueResult);
+		tx.commit();
+		session.close();
+	}
+	/*public void f5(){
+		Session session = HibernateSessionFactory.getSession(); 
+		Transaction tx = null;
+		tx = session.beginTransaction();
+		User user = new User();
+		user.getAdmin().setAid(1);
+		user.setSex("女");
+		user.setUname("小梅");
+		user.setUMiaoshu("今天心情很不美丽.");
+		user.setBirthday(Date.valueOf("1992-03-23"));
+		session.save(user);		//插入
+		user.getAdmin().setAid(2);
+		session.save(user);		//修改
+		tx.commit();
+		session.close();
+	}*/
+	
+	//修改
+	public void f6(){
+		Session session = HibernateSessionFactory.getSession(); 
+		Transaction tx = null;
+		tx = session.beginTransaction();
+		User user = session.load(User.class, 2);
+		user.setUname("千代");
+		//session.clear();
+		session.update(user);
+		tx.commit();
+		session.close();
+	}
+	//删除
+	public void f7(){
+		Session session = HibernateSessionFactory.getSession();
+		Transaction beginTransaction = session.beginTransaction();
+		User load = session.load(User.class, 4);
+		session.delete(load);
+		beginTransaction.commit();
+		session.close();
+	}
+	
+	/**
+	 * hibernate的一级缓存存在于session中，session关闭就消失
+	 * 
+	 * 二级缓存属于sessionfactory级别
+	 */
+	
+	}
